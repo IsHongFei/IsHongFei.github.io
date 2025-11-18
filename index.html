@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>人员管理系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --warning: #f8961e;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --border-radius: 12px;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            background-color: #f5f7fb;
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 0;
+            margin: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding-bottom: 60px; /* 为底部导航留出空间，移动端导航栏更矮 */
+        }
+
+        /* 头部样式 */
+        .app-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 16px;
+            border-radius: 0 0 20px 20px;
+            box-shadow: var(--shadow);
+            margin-bottom: 16px;
+        }
+
+        .app-title {
+            font-size: 1.3rem; /* 略微减小标题大小 */
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .app-subtitle {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        /* 内容区域 */
+        .content-section {
+            display: none;
+            padding: 0 12px; /* 减小内边距 */
+            animation: fadeIn 0.3s ease;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .section-title {
+            font-size: 1.1rem; /* 减小标题大小 */
+            font-weight: 600;
+            margin: 16px 0; /* 减小间距 */
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title i {
+            margin-right: 8px;
+            color: var(--primary);
+        }
+
+        /* 卡片样式 */
+        .card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 12px; /* 减小内边距 */
+            margin-bottom: 12px; /* 减小间距 */
+        }
+
+        /* 人员列表 */
+        .person-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0; /* 减小内边距 */
+            border-bottom: 1px solid #eee;
+        }
+
+        .person-item:last-child {
+            border-bottom: none;
+        }
+
+        .person-info {
+            display: flex;
+            align-items: center;
+            flex: 1; /* 确保信息区域占满空间 */
+        }
+
+        .person-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        .person-name {
+            font-weight: 500;
+            font-size: 1rem;
+        }
+
+        .person-roles {
+            display: flex;
+            gap: 6px;
+            margin-top: 2px;
+        }
+
+        .role-tag {
+            font-size: 0.7rem;
+            padding: 1px 6px;
+            border-radius: 12px;
+            background: #e9ecef;
+        }
+
+        .role-trash {
+            background: #e7f5ff;
+            color: #228be6;
+        }
+
+        .role-boot {
+            background: #fff3bf;
+            color: #f08c00;
+        }
+
+        .person-status {
+            font-size: 0.8rem;
+            padding: 2px 8px;
+            border-radius: 20px;
+            background: #e9ecef;
+            margin-top: 0.2rem;
+        }
+
+        .status-leave {
+            background: #ffe5ec;
+            color: var(--danger);
+        }
+
+        .person-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .btn {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 500;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-sm {
+            padding: 6px 10px;
+            font-size: 0.8rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+
+        /* 值班卡片 */
+        .duty-card {
+            text-align: center;
+            padding: 16px;
+        }
+
+        .current-date {
+            font-size: 1.5rem; /* 减小日期大小 */
+            color: #0a9cf2;
+            margin-bottom: 12px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .duty-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .trash-icon {
+            color: #37b24d;
+        }
+
+        .boot-icon {
+            color: #f59f00;
+        }
+
+        .duty-person {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 8px 0;
+        }
+
+        .duty-actions {
+            margin-top: 16px;
+        }
+
+        /* 角色分配卡片 */
+        .role-card {
+            margin-bottom: 12px;
+        }
+
+        .role-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            font-size: 0.95rem;
+        }
+
+        .role-title i {
+            margin-right: 6px;
+        }
+
+        .role-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .role-person {
+            display: flex;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        .role-person .avatar-small {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-right: 5px;
+        }
+
+        /* 请假表单 */
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            background: #f8f9fa;
+        }
+
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0; /* 减小导航栏高度 */
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: var(--gray);
+            font-size: 0.7rem; /* 减小导航文字 */
+            flex: 1;
+            padding: 4px 0; /* 增加触控区域 */
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        .nav-icon {
+            font-size: 1.2rem;
+            margin-bottom: 2px;
+        }
+
+        /* 模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 12px; /* 减小内边距 */
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--border-radius);
+            width: 100%;
+            max-width: 400px;
+            padding: 16px; /* 减小内边距 */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.3s ease;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .modal-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.4rem;
+            cursor: pointer;
+            color: var(--gray);
+            width: 30px; /* 扩大关闭按钮触控区域 */
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        /* 动画 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 30px 16px; /* 调整空状态内边距 */
+            color: var(--gray);
+        }
+
+        .empty-icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        /* 人员序号 */
+        .person-index {
+            font-size: 1.2rem; /* 减小序号大小 */
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 360px) {
+            .app-header {
+                padding: 14px 10px;
+            }
+
+            .content-section {
+                padding: 0 8px;
+            }
+
+            .person-avatar {
+                width: 36px;
+                height: 36px;
+            }
+            
+            /* 进一步减小小屏幕上的按钮大小 */
+            .btn-sm {
+                padding: 5px 8px;
+                font-size: 0.75rem;
+            }
+            
+            /* 小屏幕上简化角色标签显示 */
+            .role-tag {
+                font-size: 0.65rem;
+                padding: 1px 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 应用头部 -->
+        <header class="app-header">
+            <h1 class="app-title">人员管理系统</h1>
+            <p class="app-subtitle">独立管理倒垃圾与值班开机人员</p>
+        </header>
+
+        <!-- 人员管理模块 -->
+        <section id="personnel-section" class="content-section active">
+            <h2 class="section-title"><i class="fas fa-users"></i> 人员列表</h2>
+
+            <div class="card">
+                <div class="person-list" id="person-list">
+                    <!-- 人员列表将通过JS动态生成 -->
+                </div>
+            </div>
+
+            <button class="btn btn-primary" id="add-person-btn" style="width: 100%; margin-top: 10px;">
+                <i class="fas fa-plus"></i> 添加人员
+            </button>
+        </section>
+
+        <!-- 值班倒垃圾模块 -->
+        <section id="trash-section" class="content-section">
+            <h2 class="section-title"><i class="fas fa-trash-alt"></i> 值班倒垃圾</h2>
+
+            <div class="card duty-card">
+                <div class="current-date" id="trash-current-date">
+                    <!-- 日期将通过JS动态生成 -->
+                </div>
+                <div class="duty-icon trash-icon">
+                    <i class="fas fa-trash-restore"></i>
+                </div>
+                <h3>今日倒垃圾人员</h3>
+                <div class="duty-person" id="trash-duty-person">--</div>
+                <p class="text-muted">每天轮班一人倒垃圾</p>
+
+                <div class="duty-actions">
+                    <button class="btn btn-success" id="rotate-trash-btn"><i class="fas fa-sync-alt"></i> 轮换值班</button>
+                </div>
+            </div>
+
+            <div class="card role-card">
+                <div class="role-title"><i class="fas fa-user-friends"></i> 倒垃圾人员组</div>
+                <div class="role-list" id="trash-role-list">
+                    <!-- 倒垃圾人员列表 -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 值班开机模块 -->
+        <section id="boot-section" class="content-section">
+            <h2 class="section-title"><i class="fas fa-desktop"></i> 值班开机</h2>
+
+            <div class="card duty-card">
+                <div class="current-date" id="boot-current-date">
+                    <!-- 日期将通过JS动态生成 -->
+                </div>
+                <div class="duty-icon boot-icon">
+                    <i class="fas fa-power-off"></i>
+                </div>
+                <h3>今日开机人员</h3>
+                <div class="duty-person" id="boot-duty-person">--</div>
+                <p class="text-muted">每天轮班一人开机</p>
+
+                <div class="duty-actions">
+                    <button class="btn btn-success" id="rotate-boot-btn"><i class="fas fa-sync-alt"></i> 轮换值班</button>
+                </div>
+            </div>
+
+            <div class="card role-card">
+                <div class="role-title"><i class="fas fa-user-friends"></i> 开机人员组</div>
+                <div class="role-list" id="boot-role-list">
+                    <!-- 开机人员列表 -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 请假模块 -->
+        <section id="leave-section" class="content-section">
+            <h2 class="section-title"><i class="fas fa-calendar-alt"></i> 请假管理</h2>
+
+            <div class="card">
+                <h3 style="margin-bottom: 12px; font-size: 1rem;">添加请假记录</h3>
+
+                <div class="form-group">
+                    <label class="form-label">请假人员</label>
+                    <select class="form-control" id="leave-person-select">
+                        <!-- 人员选项将通过JS动态生成 -->
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">请假日期</label>
+                    <input type="date" class="form-control" id="leave-date" />
+                </div>
+
+                <button class="btn btn-primary" id="add-leave-btn" style="width: 100%">
+                    <i class="fas fa-plus"></i> 添加请假
+                </button>
+            </div>
+
+            <div class="card">
+                <h3 style="margin-bottom: 12px; font-size: 1rem;">请假记录</h3>
+                <div id="leave-list">
+                    <!-- 请假记录将通过JS动态生成 -->
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 底部导航 -->
+    <nav class="bottom-nav">
+        <a href="#" class="nav-item active" data-target="personnel-section">
+            <i class="fas fa-users nav-icon"></i>
+            <span>人员</span>
+        </a>
+        <a href="#" class="nav-item" data-target="trash-section">
+            <i class="fas fa-trash-alt nav-icon"></i>
+            <span>倒垃圾</span>
+        </a>
+        <a href="#" class="nav-item" data-target="boot-section">
+            <i class="fas fa-desktop nav-icon"></i>
+            <span>开机</span>
+        </a>
+        <a href="#" class="nav-item" data-target="leave-section">
+            <i class="fas fa-calendar-alt nav-icon"></i>
+            <span>请假</span>
+        </a>
+    </nav>
+
+    <!-- 添加人员模态框 -->
+    <div class="modal" id="person-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="person-modal-title">添加人员</h3>
+                <button class="close-btn" id="close-person-modal">&times;</button>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">姓名</label>
+                <input type="text" class="form-control" id="person-name" placeholder="请输入姓名" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">分配角色</label>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <label style="display: flex; align-items: center; margin-bottom: 5px;">
+                        <input type="checkbox" id="role-trash" checked style="width: 16px; height: 16px; margin-right: 5px;"/>
+                        <span>倒垃圾</span>
+                    </label>
+                    <label style="display: flex; align-items: center; margin-bottom: 5px;">
+                        <input type="checkbox" id="role-boot" checked style="width: 16px; height: 16px; margin-right: 5px;"/>
+                        <span>开机</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancel-person-btn">取消</button>
+                <button class="btn btn-primary" id="save-person-btn">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 数据模型
+        let appData = {
+            personnel: [
+                { id: 1, name: '单友平', status: '正常', roles: ['trash', 'boot'] },
+                { id: 2, name: '宾新辉', status: '正常', roles: ['trash'] },
+                { id: 3, name: '莫芝本', status: '正常', roles: ['boot'] },
+                { id: 4, name: '刘平固', status: '正常', roles: ['trash', 'boot'] },
+                {
+                    id: 5,
+                    name: '刘平阳',
+                    roles: ['trash', 'boot']
+                },
+                {
+                    id: 6,
+                    name: '刘龙广',
+                    status: '正常',
+                    roles: ['trash', 'boot']
+                },
+                {
+                    id: 7,
+                    name: '周万春',
+                    status: '正常',
+                    roles: ['trash', 'boot']
+                },
+                {
+                    id: 8,
+                    name: '陆勇',
+                    status: '正常',
+                    roles: ['trash', 'boot']
+                },
+                {
+                    id: 9,
+                    name: '王荣生',
+                    status: '正常',
+                    roles: ['trash', 'boot']
+                },
+                {
+                    id: 10,
+                    name: '何邦安',
+                    status: '正常',
+                    roles: ['trash', 'boot']
+                },
+                {
+                    id: 11,
+                    name: '杨文化',
+                    status: '正常',
+                    roles: ['trash', 'boot']
+                },
+                {
+                    id: 12,
+                    name: '周兆军',
+                    status: '正常',
+                    roles: ['trash', 'boot']
+                },
+
+                {
+                    id: 13,
+                    name: '吉孟见',
+                    status: '正常',
+                    roles: ['trash', 'boot']
+                },
+                {
+                    id: 14,
+                    name: '陶吉中',
+                    status: '正常',
+                    roles: ['trash', 'boot']
+                },
+                {
+                    id: 15,
+                    name: '舒代军',
+                    status: '正常',
+                    roles: ['trash', 'boot']
+                },
+                {
+                    id: 16,
+                    name: '何家扬',
+                    status: '正常',
+                    roles: ['trash', 'boot']
+                },
+                {
+                    id: 17,
+                    name: '李伟安',
+                    status: '正常',
+                    roles: ['trash', 'boot']
+                }
+            ],
+            trashDutyIndex: 0,
+            bootDutyIndex: 0,
+            leaves: [] //请假数组
+        }
+
+        // 从localStorage加载数据
+        function loadData() {
+            const savedData = localStorage.getItem('personnelManagerData')
+            if (savedData) {
+                appData = JSON.parse(savedData)
+            }
+            updatePersonStatus()
+            renderAll()
+        }
+
+        // 保存数据到localStorage
+        function saveData() {
+            localStorage.setItem('personnelManagerData', JSON.stringify(appData))
+        }
+
+        // 获取当前日期字符串
+        function getCurrentDate() {
+            const now = new Date()
+            const year = now.getFullYear()
+            const month = String(now.getMonth() + 1).padStart(2, '0')
+            const day = String(now.getDate()).padStart(2, '0')
+            return `${year}-${month}-${day}`
+        }
+
+        // 更新日期显示
+        function updateDateDisplay() {
+            const currentDate = getCurrentDate()
+            document.getElementById('trash-current-date').textContent = currentDate
+            document.getElementById('boot-current-date').textContent = currentDate
+        }
+
+        // 更新人员状态
+        function updatePersonStatus() {
+            const today = getCurrentDate()
+
+            // 重置所有人员状态为正常
+            appData.personnel.forEach((person) => {
+                person.status = '正常'
+            })
+
+            // 标记今天请假的人员
+            appData.leaves.forEach((leave) => {
+                if (leave.date === today) {
+                    const person = appData.personnel.find((p) => p.id === leave.personId)
+                    if (person) {
+                        person.status = '请假'
+                    }
+                }
+            })
+        }
+
+        // 渲染人员列表
+        function renderPersonnelList() {
+            const container = document.getElementById('person-list')
+
+            if (appData.personnel.length === 0) {
+                container.innerHTML = `
+                         <div class="empty-state">
+                             <div class="empty-icon">
+                                 <i class="fas fa-users"></i>
+                             </div>
+                             <p>暂无人员，请添加</p>
+                         </div>
+                     `
+                return
+            }
+
+            container.innerHTML = appData.personnel
+                .map(
+                    (person, index) => `
+                     <div class="person-item">
+                         <div class="person-info">
+                            <div class="person-index">${index + 1}. &nbsp;</div>
+                             <div class="person-avatar">${person.name.charAt(0)}</div>
+                             <div>
+                                 <div class="person-name">${person.name}</div>
+                                 <div class="person-roles">
+                                     ${
+                                         person.roles.includes('trash')
+                                             ? '<span class="role-tag role-trash">倒垃圾</span>'
+                                             : ''
+                                     }
+                                     ${
+                                         person.roles.includes('boot')
+                                             ? '<span class="role-tag role-boot">开机</span>'
+                                             : ''
+                                     }
+                                 </div>
+                                 <div class="person-status ${person.status === '请假' ? 'status-leave' : ''}">
+                                     ${person.status}
+                                 </div>
+                             </div>
+                         </div>
+                         <div class="person-actions">
+                             <button class="btn btn-outline btn-sm edit-person-btn" data-id="${person.id}" style="min-width: 40px;">
+                                 <i class="fas fa-edit"></i>
+                             </button>
+                             <button class="btn btn-danger btn-sm delete-person-btn" data-id="${person.id}" style="min-width: 40px;">
+                                 <i class="fas fa-trash"></i>
+                             </button>
+                         </div>
+                     </div>
+                 `
+                )
+                .join('')
+
+            // 添加事件监听
+            document.querySelectorAll('.edit-person-btn').forEach((btn) => {
+                btn.addEventListener('click', function () {
+                    const personId = parseInt(this.getAttribute('data-id'))
+                    editPerson(personId)
+                })
+            })
+
+            document.querySelectorAll('.delete-person-btn').forEach((btn) => {
+                btn.addEventListener('click', function () {
+                    const personId = parseInt(this.getAttribute('data-id'))
+                    deletePerson(personId)
+                })
+            })
+        }
+
+        // 渲染值班人员
+        function renderDutyPersons() {
+            // 倒垃圾值班人员
+            const trashPersonnel = appData.personnel.filter(
+                (person) => person.roles.includes('trash') && person.status === '正常'
+            )
+
+            if (trashPersonnel.length > 0) {
+                const trashIndex = appData.trashDutyIndex % trashPersonnel.length
+                document.getElementById('trash-duty-person').textContent = trashPersonnel[trashIndex].name
+            } else {
+                document.getElementById('trash-duty-person').textContent = '暂无人员'
+            }
+
+            // 开机值班人员
+            const bootPersonnel = appData.personnel.filter(
+                (person) => person.roles.includes('boot') && person.status === '正常'
+            )
+
+            if (bootPersonnel.length > 0) {
+                const bootIndex = appData.bootDutyIndex % bootPersonnel.length
+                document.getElementById('boot-duty-person').textContent = bootPersonnel[bootIndex].name
+            } else {
+                document.getElementById('boot-duty-person').textContent = '暂无人员'
+            }
+        }
+
+        // 渲染角色分配列表
+        function renderRoleLists() {
+            // 倒垃圾人员组
+            const trashPersonnel = appData.personnel.filter((person) => person.roles.includes('trash'))
+
+            const trashList = document.getElementById('trash-role-list')
+            if (trashPersonnel.length === 0) {
+                trashList.innerHTML = '<div class="empty-state" style="padding: 20px 0;"><p>暂无人员</p></div>'
+            } else {
+                trashList.innerHTML = trashPersonnel
+                    .map(
+                        (person) => `
+                         <div class="role-person">
+                             <div class="avatar-small">${person.name.charAt(0)}</div>
+                             ${person.name}
+                         </div>
+                     `
+                    )
+                    .join('')
+            }
+
+            // 开机人员组
+            const bootPersonnel = appData.personnel.filter((person) => person.roles.includes('boot'))
+
+            const bootList = document.getElementById('boot-role-list')
+            if (bootPersonnel.length === 0) {
+                bootList.innerHTML = '<div class="empty-state" style="padding: 20px 0;"><p>暂无人员</p></div>'
+            } else {
+                bootList.innerHTML = bootPersonnel
+                    .map(
+                        (person) => `
+                         <div class="role-person">
+                             <div class="avatar-small">${person.name.charAt(0)}</div>
+                             ${person.name}
+                         </div>
+                     `
+                    )
+                    .join('')
+            }
+        }
+
+        // 渲染请假选择框
+        function renderLeaveSelect() {
+            const select = document.getElementById('leave-person-select')
+            select.innerHTML = appData.personnel
+                .map((person) => `<option value="${person.id}">${person.name}</option>`)
+                .join('')
+        }
+
+        // 渲染请假列表
+        function renderLeaveList() {
+            const container = document.getElementById('leave-list')
+
+            if (appData.leaves.length === 0) {
+                container.innerHTML = `
+                         <div class="empty-state">
+                             <div class="empty-icon">
+                                 <i class="fas fa-calendar-times"></i>
+                             </div>
+                             <p>暂无请假记录</p>
+                         </div>
+                     `
+                return
+            }
+
+            container.innerHTML = appData.leaves
+                .map(
+                    (leave) => `
+                     <div class="person-item">
+                         <div class="person-info">
+                             <div class="person-avatar">${leave.personName.charAt(0)}</div>
+                             <div>
+                                 <div class="person-name">${leave.personName}</div>
+                                 <div class="text-muted">${leave.date}</div>
+                             </div>
+                         </div>
+                         <div class="person-actions">
+                             <button class="btn btn-danger btn-sm delete-leave-btn" data-id="${leave.id}" style="min-width: 40px;">
+                                 <i class="fas fa-trash"></i>
+                             </button>
+                         </div>
+                     </div>
+                 `
+                )
+                .join('')
+
+            // 添加事件监听
+            document.querySelectorAll('.delete-leave-btn').forEach((btn) => {
+                btn.addEventListener('click', function () {
+                    const leaveId = parseInt(this.getAttribute('data-id'))
+                    deleteLeave(leaveId)
+                })
+            })
+        }
+
+        // 渲染所有内容
+        function renderAll() {
+            updateDateDisplay()
+            renderPersonnelList()
+            renderDutyPersons()
+            renderRoleLists()
+            renderLeaveSelect()
+            renderLeaveList()
+        }
+
+        // 添加人员
+        function addPerson(name, roles) {
+            const newPerson = {
+                id: Date.now(),
+                name: name,
+                status: '正常',
+                roles: roles
+            }
+
+            appData.personnel.push(newPerson)
+            saveData()
+            renderAll()
+        }
+
+        // 编辑人员
+        function editPerson(id) {
+            const person = appData.personnel.find((p) => p.id === id)
+            if (!person) return
+
+            document.getElementById('person-modal-title').textContent = '编辑人员'
+            document.getElementById('person-name').value = person.name
+            document.getElementById('role-trash').checked = person.roles.includes('trash')
+            document.getElementById('role-boot').checked = person.roles.includes('boot')
+            document.getElementById('person-name').setAttribute('data-edit-id', id)
+
+            document.getElementById('person-modal').classList.add('active')
+        }
+
+        // 更新人员
+        function updatePerson(id, name, roles) {
+            const person = appData.personnel.find((p) => p.id === id)
+            if (person) {
+                person.name = name
+                person.roles = roles
+                saveData()
+                renderAll()
+            }
+        }
+
+        // 删除人员
+        function deletePerson(id) {
+            if (confirm('确定要删除这个人员吗？')) {
+                appData.personnel = appData.personnel.filter((p) => p.id !== id)
+                saveData()
+                renderAll()
+            }
+        }
+
+        // 轮换值班
+        function rotateDuty(type) {
+            let availablePersonnel
+
+            if (type === 'trash') {
+                availablePersonnel = appData.personnel.filter(
+                    (person) => person.roles.includes('trash') && person.status === '正常'
+                )
+
+                if (availablePersonnel.length === 0) {
+                    alert('没有可值班的倒垃圾人员！')
+                    return
+                }
+
+                appData.trashDutyIndex = (appData.trashDutyIndex + 1) % availablePersonnel.length
+            } else {
+                availablePersonnel = appData.personnel.filter(
+                    (person) => person.roles.includes('boot') && person.status === '正常'
+                )
+
+                if (availablePersonnel.length === 0) {
+                    alert('没有可值班的开机人员！')
+                    return
+                }
+
+                appData.bootDutyIndex = (appData.bootDutyIndex + 1) % availablePersonnel.length
+            }
+
+            saveData()
+            renderDutyPersons()
+
+            const dutyType = type === 'trash' ? '倒垃圾' : '开机'
+            alert(`${dutyType}值班人员已轮换！`)
+        }
+
+        // 添加请假
+        function addLeave(personId, date) {
+            const person = appData.personnel.find((p) => p.id === personId)
+            if (!person) return
+
+            // 检查是否已有相同的请假记录
+            const existingLeave = appData.leaves.find(
+                leave => leave.personId === personId && leave.date === date
+            )
+            
+            if (existingLeave) {
+                alert('该人员在所选日期已有请假记录！')
+                return
+            }
+
+            const newLeave = {
+                id: Date.now(),
+                personId: personId,
+                date: date,
+                personName: person.name
+            }
+
+            appData.leaves.push(newLeave)
+            updatePersonStatus()
+            saveData()
+            renderAll()
+        }
+
+        // 删除请假
+        function deleteLeave(id) {
+            if (confirm('确定要删除这个请假记录吗？')) {
+                appData.leaves = appData.leaves.filter((l) => l.id !== id)
+                updatePersonStatus()
+                saveData()
+                renderAll()
+            }
+        }
+
+        // 初始化应用
+        function initApp() {
+            // 加载数据
+            loadData()
+
+            // 底部导航切换
+            document.querySelectorAll('.nav-item').forEach((item) => {
+                item.addEventListener('click', function (e) {
+                    e.preventDefault()
+
+                    // 更新活动导航项
+                    document.querySelectorAll('.nav-item').forEach((nav) => {
+                        nav.classList.remove('active')
+                    })
+                    this.classList.add('active')
+
+                    // 显示对应内容区域
+                    const targetId = this.getAttribute('data-target')
+                    document.querySelectorAll('.content-section').forEach((section) => {
+                        section.classList.remove('active')
+                    })
+                    document.getElementById(targetId).classList.add('active')
+                })
+            })
+
+            // 添加人员按钮
+            document.getElementById('add-person-btn').addEventListener('click', function () {
+                document.getElementById('person-modal-title').textContent = '添加人员'
+                document.getElementById('person-name').value = ''
+                document.getElementById('role-trash').checked = true
+                document.getElementById('role-boot').checked = true
+                document.getElementById('person-name').removeAttribute('data-edit-id')
+                document.getElementById('person-modal').classList.add('active')
+            })
+
+            // 关闭人员模态框
+            document.getElementById('close-person-modal').addEventListener('click', function () {
+                document.getElementById('person-modal').classList.remove('active')
+            })
+
+            document.getElementById('cancel-person-btn').addEventListener('click', function () {
+                document.getElementById('person-modal').classList.remove('active')
+            })
+
+            // 保存人员
+            document.getElementById('save-person-btn').addEventListener('click', function () {
+                const name = document.getElementById('person-name').value.trim()
+                const editId = document.getElementById('person-name').getAttribute('data-edit-id')
+
+                if (!name) {
+                    alert('请输入姓名！')
+                    return
+                }
+
+                // 获取角色分配
+                const roles = []
+                if (document.getElementById('role-trash').checked) roles.push('trash')
+                if (document.getElementById('role-boot').checked) roles.push('boot')
+
+                if (roles.length === 0) {
+                    alert('请至少分配一个角色！')
+                    return
+                }
+
+                if (editId) {
+                    updatePerson(parseInt(editId), name, roles)
+                } else {
+                    addPerson(name, roles)
+                }
+
+                document.getElementById('person-modal').classList.remove('active')
+            })
+
+            // 轮换值班按钮
+            document.getElementById('rotate-trash-btn').addEventListener('click', function () {
+                rotateDuty('trash')
+            })
+
+            document.getElementById('rotate-boot-btn').addEventListener('click', function () {
+                rotateDuty('boot')
+            })
+
+            // 添加请假
+            document.getElementById('add-leave-btn').addEventListener('click', function () {
+                const personId = parseInt(document.getElementById('leave-person-select').value)
+                const date = document.getElementById('leave-date').value
+
+                if (!date) {
+                    alert('请选择请假日期！')
+                    return
+                }
+
+                addLeave(personId, date)
+                document.getElementById('leave-date').value = ''
+            })
+
+            // 设置默认日期为今天
+            const today = getCurrentDate()
+            document.getElementById('leave-date').value = today
+        }
+
+        // 启动应用
+        document.addEventListener('DOMContentLoaded', initApp)
+    </script>
+</body>
+</html>
